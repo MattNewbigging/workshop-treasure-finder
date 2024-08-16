@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { AssetManager } from "./asset-manager";
 import { Player } from "./agent";
+import { AStar } from "./astar";
 
 export interface Cell {
   row: number;
@@ -31,6 +32,7 @@ export class GameState {
 
   private player: Player;
   private moveGraphic: THREE.Object3D;
+  private moveGraphicCell?: Cell;
 
   constructor(private assetManager: AssetManager) {
     // Renderer
@@ -88,6 +90,7 @@ export class GameState {
 
     // Listeners
     window.addEventListener("mousemove", this.onMouseMove);
+    window.addEventListener("mousedown", this.onMouseDown);
 
     // Player
     const firstCell = this.grid[0][0];
@@ -186,6 +189,7 @@ export class GameState {
     );
     if (!intersections.length) {
       this.moveGraphic.visible = false;
+      this.moveGraphicCell = undefined;
       return;
     }
 
@@ -198,6 +202,7 @@ export class GameState {
     // We ignore obstacles and the player's current cell
     if (cell.obstacle || cellsAreEqual(cell, this.player.currentCell)) {
       this.moveGraphic.visible = false;
+      this.moveGraphicCell = undefined;
       return;
     }
 
@@ -205,6 +210,22 @@ export class GameState {
     this.moveGraphic.position.x = cell.col;
     this.moveGraphic.position.z = cell.row;
     this.moveGraphic.visible = true;
+
+    this.moveGraphicCell = cell;
+  };
+
+  private onMouseDown = () => {
+    // Instead of re-doing the intersection stuff, save the move graphic's cell in onMouseMove
+    if (!this.moveGraphicCell) {
+      return;
+    }
+
+    // Find a path to it
+    const toCell = this.moveGraphicCell;
+
+    const aStar = new AStar();
+    const path = aStar.getPath(this.grid, this.player.currentCell, toCell);
+    console.log("path", path);
   };
 
   private onCanvasResize = () => {
