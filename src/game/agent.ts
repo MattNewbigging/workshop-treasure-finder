@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { AssetManager } from "./asset-manager";
+import { Cell } from "./game-state";
 
 /**
  * Player + Enemy:
@@ -18,13 +19,16 @@ import { AssetManager } from "./asset-manager";
  */
 export abstract class Agent {
   model: THREE.Object3D;
+  currentCell: Cell;
 
   protected mixer: THREE.AnimationMixer;
   protected animations = new Map<string, THREE.AnimationAction>();
   protected currentAction?: THREE.AnimationAction;
 
-  constructor(protected assetManager: AssetManager) {
+  constructor(protected assetManager: AssetManager, startingCell: Cell) {
     this.model = assetManager.models.get("dummy");
+
+    this.currentCell = startingCell;
 
     this.mixer = new THREE.AnimationMixer(this.model);
 
@@ -57,8 +61,8 @@ export abstract class Agent {
 }
 
 export class Player extends Agent {
-  constructor(assetManager: AssetManager) {
-    super(assetManager);
+  constructor(assetManager: AssetManager, startingCell: Cell) {
+    super(assetManager, startingCell);
 
     // Assign player texture to model
     const texture = assetManager.textures.get("dummy");

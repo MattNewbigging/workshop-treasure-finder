@@ -83,6 +83,15 @@ export class AssetManager {
       texture.colorSpace = THREE.SRGBColorSpace;
       this.textures.set("floor-red", texture);
     });
+
+    const panelUrl = new URL(
+      "/textures/panel-transparent-center-000.png",
+      import.meta.url
+    ).href;
+    loader.load(panelUrl, (texture) => {
+      texture.colorSpace = THREE.SRGBColorSpace;
+      this.textures.set("panel", texture);
+    });
   }
 
   private loadAnimations(loader: FBXLoader) {
