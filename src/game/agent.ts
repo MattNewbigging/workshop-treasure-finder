@@ -28,16 +28,18 @@ export abstract class Agent {
   constructor(protected assetManager: AssetManager, startingCell: Cell) {
     this.model = assetManager.models.get("dummy");
 
-    this.currentCell = startingCell;
-
+    // Animation
     this.mixer = new THREE.AnimationMixer(this.model);
-
     const idleClip = assetManager.animations.get("idle");
     const idleAction = this.mixer.clipAction(idleClip);
     this.animations.set("idle", idleAction);
 
     // Idle by default
     this.playAnimation("idle");
+
+    // Position according to starting cell
+    this.currentCell = startingCell;
+    this.model.position.set(startingCell.col, 0, startingCell.row);
   }
 
   playAnimation(name: string) {

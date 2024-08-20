@@ -93,7 +93,7 @@ export class GameState {
     window.addEventListener("mousedown", this.onMouseDown);
 
     // Player
-    const firstCell = this.grid[0][0];
+    const firstCell = getRandomEdgeCell(this.grid, this.gridSize);
     this.player = new Player(assetManager, firstCell);
     this.scene.add(this.player.model);
 
@@ -239,4 +239,26 @@ export class GameState {
 
 export function cellsAreEqual(a: Cell, b: Cell) {
   return a.row === b.row && a.col === b.col;
+}
+
+function getRandomEdgeCell(grid: Grid, size: number) {
+  // Pull out all the edge cells into an array
+  const edgeCells: Cell[] = [];
+
+  // Get first and last row and column
+  edgeCells.push(...grid[0]);
+  edgeCells.push(...grid[size - 1]);
+
+  // Go through other rows between top and bot
+  for (let row = 1; row < size - 1; row++) {
+    edgeCells.push(grid[row][0], grid[row][size - 1]);
+  }
+
+  // Filter out obstacles
+  const validEdgeCells = edgeCells.filter((cell) => !cell.obstacle);
+
+  // Pick a random one
+  const rnd = Math.floor(Math.random() * validEdgeCells.length);
+
+  return validEdgeCells[rnd];
 }
