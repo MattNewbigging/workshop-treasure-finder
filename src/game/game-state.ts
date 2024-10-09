@@ -22,6 +22,7 @@ export class GameState {
 
   private blackMaterial: THREE.MeshLambertMaterial;
   private orangeMaterial: THREE.MeshLambertMaterial;
+  private greenMaterial: THREE.MeshLambertMaterial;
 
   private pointer = new THREE.Vector2();
   private raycaster = new THREE.Raycaster();
@@ -68,6 +69,9 @@ export class GameState {
     });
     this.orangeMaterial = new THREE.MeshLambertMaterial({
       map: assetManager.textures.get("obstacle-orange"),
+    });
+    this.greenMaterial = new THREE.MeshLambertMaterial({
+      map: assetManager.textures.get("floor-green"),
     });
 
     // Move graphic
@@ -225,7 +229,10 @@ export class GameState {
 
     const aStar = new AStar();
     const path = aStar.getPath(this.grid, this.player.currentCell, toCell);
-    console.log("path", path);
+    if (path) {
+      // this.player.setPath(path);
+      this.displayPath(path);
+    }
   };
 
   private onCanvasResize = () => {
@@ -235,6 +242,19 @@ export class GameState {
 
     this.camera.updateProjectionMatrix();
   };
+
+  private displayPath(path: Cell[]) {
+    // Turn all these cells green
+    this.gridGroup.children.forEach((object) => {
+      // Does this cell exist on the path?
+      const onPath = path.some((cell) =>
+        cellsAreEqual(cell, object.userData.cell)
+      );
+      if (onPath) {
+        (object as THREE.Mesh).material = this.greenMaterial;
+      }
+    });
+  }
 }
 
 export function cellsAreEqual(a: Cell, b: Cell) {
@@ -261,4 +281,8 @@ function getRandomEdgeCell(grid: Grid, size: number) {
   const rnd = Math.floor(Math.random() * validEdgeCells.length);
 
   return validEdgeCells[rnd];
+}
+
+export function getCellWorldPosition(cell: Cell) {
+  return new THREE.Vector3(cell.row, 0, cell.col);
 }

@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { AssetManager } from "./asset-manager";
-import { Cell } from "./game-state";
+import { Cell, getCellWorldPosition } from "./game-state";
 
 /**
  * Player + Enemy:
@@ -24,6 +24,9 @@ export abstract class Agent {
   protected mixer: THREE.AnimationMixer;
   protected animations = new Map<string, THREE.AnimationAction>();
   protected currentAction?: THREE.AnimationAction;
+
+  private path?: Cell[];
+  private targetCell?: Cell;
 
   constructor(protected assetManager: AssetManager, startingCell: Cell) {
     this.model = assetManager.models.get("dummy");
@@ -57,8 +60,32 @@ export abstract class Agent {
     this.currentAction = nextAction;
   }
 
+  setPath(path: Cell[]) {
+    this.path = path;
+    this.targetNextCell();
+  }
+
   update(dt: number) {
     this.mixer.update(dt);
+
+    this.followPath(dt);
+  }
+
+  private targetNextCell() {
+    this.targetCell = this.path?.shift();
+  }
+
+  private followPath(dt: number) {
+    if (!this.targetCell) {
+      return;
+    }
+
+    // Move towards target cell
+    const targetPos = getCellWorldPosition(this.targetCell);
+    const targetDir = targetPos.sub(this.model.position).normalize();
+
+    const moveStep = targetDir.multiplyScalar(dt * 2);
+    this.model.position.add(moveStep);
   }
 }
 
